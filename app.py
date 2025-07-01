@@ -396,7 +396,36 @@ def shorten_label(label):
 # Hàm tạo biểu đồ tròn với kích thước cố định
 # Thay thế toàn bộ hàm plot_pie_chart:
 def plot_pie_chart_plotly(data, column_name, title, gender):
-    value_counts = data[data['Giới tính của bạn là gì?'] == gender][column_name].value_counts()
+    # Lọc dữ liệu theo giới tính
+    filtered_data = data[data['Giới tính của bạn là gì?'] == gender][column_name].dropna()
+    
+    if filtered_data.empty:
+        return None
+    
+    # Danh sách 4 đáp án hợp lệ cho cột D
+    valid_options = [
+        "Các mối quan hệ trên mạng xã hội",
+        "Trong mối quan hệ với gia đình",
+        "Trong các mối quan hệ với bạn bè, đồng nghiệp",
+        "Trong mối quan hệ với vợ/chồng/người yêu"
+    ]
+    
+    # Tách chuỗi và lọc giá trị hợp lệ, chỉ áp dụng giới hạn 4 đáp án cho cột D
+    all_values = []
+    for response in filtered_data:
+        if isinstance(response, str) and column_name == "Bạn thường bắt gặp tình huống xuất hiện hành vi Silent Treatment ở đâu?":
+            # Tách cả dấu chấm và phẩy, chỉ giữ 4 đáp án hợp lệ
+            values = [val.strip() for val in response.split('.') if val.strip() in valid_options]
+            all_values.extend(values)
+        elif isinstance(response, str):
+            # Giữ nguyên dữ liệu cho các cột khác
+            values = [val.strip() for val in response.split('.')]
+            all_values.extend(values)
+        else:
+            all_values.append(response)
+    
+    # Đếm tần suất
+    value_counts = pd.Series(all_values).value_counts()
     if value_counts.empty:
         return None
     
@@ -404,7 +433,6 @@ def plot_pie_chart_plotly(data, column_name, title, gender):
     labels = []
     for label in value_counts.index:
         if isinstance(label, str) and len(label) > 25:
-            # Chia thành 2 dòng tại khoảng trắng gần giữa
             words = label.split()
             if len(words) > 3:
                 mid = len(words) // 2
@@ -424,16 +452,16 @@ def plot_pie_chart_plotly(data, column_name, title, gender):
     
     # Tính toán chiều cao tự động dựa trên số lượng legend items
     num_items = len(sizes)
-    legend_rows = (num_items + 2) // 3  # Giả sử mỗi hàng có 3 items
-    base_height = 500  # Chiều cao cơ bản cho biểu đồ
-    legend_height = legend_rows * 30  # Mỗi hàng legend khoảng 30px
-    total_height = base_height + legend_height + 100  # Thêm padding
+    legend_rows = (num_items + 2) // 3
+    base_height = 500
+    legend_height = legend_rows * 30
+    total_height = base_height + legend_height + 100
     
     # Tạo biểu đồ Plotly
     fig = go.Figure(data=[go.Pie(
         labels=labels,
         values=sizes,
-        hole=0.1,  # Tạo donut chart nhẹ
+        hole=0.1,
         marker=dict(
             colors=colors[:len(sizes)],
             line=dict(color='white', width=2)
@@ -442,59 +470,47 @@ def plot_pie_chart_plotly(data, column_name, title, gender):
         textposition='inside',
         textinfo='percent',
         hovertemplate='<b>%{label}</b><br>Số lượng: %{value}<br>Tỷ lệ: %{percent}<extra></extra>',
-        pull=[0.05 if i == 0 else 0 for i in range(len(sizes))],  # Nổi bật slice đầu
-        # Cố định domain của pie chart để không bị co lại
-        domain=dict(x=[0.1, 0.9], y=[0.3, 0.9])  # Giữ biểu đồ ở phần trên
+        pull=[0.05 if i == 0 else 0 for i in range(len(sizes))],
+        domain=dict(x=[0.1, 0.9], y=[0.3, 0.9])
     )])
     
     # Cấu hình layout
     fig.update_layout(
-        title=dict(
-            text=f"<b>{gender}</b>",
-            x=0.5,
-            y=0.95,  # Đặt title cao hơn
-            font=dict(size=18, color='#2c3e50')
-        ),
+        title=dict(text=f"<b>{gender}</b>", x=0.5, y=0.95, font=dict(size=18, color='#2c3e50')),
         font=dict(size=12),
         showlegend=True,
         legend=dict(
             orientation="h",
             yanchor="top",
-            y=0.25,  # Đặt legend thấp hơn để không chồng lên biểu đồ
+            y=0.25,
             xanchor="center",
             x=0.5,
-            font=dict(size=14, color='#000000'),  # Giảm font size của legend
-            itemsizing="constant",  # Giữ kích thước legend items không đổi
-            itemwidth=30,  # Cố định chiều rộng của mỗi legend item
-            tracegroupgap=10,  # Khoảng cách giữa các legend items
-            # Bỏ viền khung của legend
-            bgcolor="rgba(0,0,0,0)",  # Nền trong suốt
-            borderwidth=0  # Bỏ viền
+            font=dict(size=14, color='#000000'),
+            itemsizing="constant",
+            itemwidth=30,
+            tracegroupgap=10,
+            bgcolor="rgba(0,0,0,0)",
+            borderwidth=0
         ),
-        margin=dict(l=50, r=50, t=80, b=150),  # Tăng margin bottom cho legend
-        height=total_height,  # Sử dụng chiều cao tự động
-        width=650,  # Tăng chiều rộng một chút
+        margin=dict(l=50, r=50, t=80, b=150),
+        height=total_height,
+        width=650,
         plot_bgcolor='rgba(0,0,0,0)',
         paper_bgcolor='rgba(0,0,0,0)',
         annotations=[
             dict(
                 text=f"Tổng: {sum(sizes)} phản hồi",
-                x=0.5, y=0.25, 
+                x=0.5, y=0.25,
                 xref="paper", yref="paper",
                 showarrow=False,
                 font=dict(size=12, color='#6c757d')
             )
         ]
-        # Bỏ xaxis và yaxis range vì không cần thiết cho pie chart
     )
     
-    # Cập nhật các thuộc tính của biểu đồ
     fig.update_traces(
-        textfont_size=16,  # Giảm font size text trên biểu đồ
-        marker=dict(
-            colors=colors[:len(sizes)],
-            line=dict(color='white', width=3)
-        ),
+        textfont_size=16,
+        marker=dict(colors=colors[:len(sizes)], line=dict(color='white', width=3)),
         hoverinfo='label+percent+value',
         hovertemplate='<b>%{label}</b><br>Số lượng: %{value}<br>Tỷ lệ: %{percent:.1%}<extra></extra>'
     )
