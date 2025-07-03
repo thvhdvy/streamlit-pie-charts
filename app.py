@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 # Cấu hình trang
 st.set_page_config(
-    page_title="Phân tích Silent Treatment",
+    page_title="Biểu đồ phân tích kết quả khảo sát của Anh Thư",
     page_icon="📊",
     layout="wide"
 )
