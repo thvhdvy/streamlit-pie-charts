@@ -528,6 +528,7 @@ def plot_chart_plotly(data, column_name, title, gender):
         )])
         
         fig.update_layout(
+            template='plotly_white',
             title=dict(text=f"<b>{gender}</b>", x=0.5, y=0.95, font=dict(size=18, color='#2c3e50')),
             font=dict(size=12),
             showlegend=True,
