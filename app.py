@@ -567,8 +567,8 @@ def plot_chart_plotly(data, column_name, title, gender):
     
     return fig
 # Header chính với animation
-st.markdown('<h1 class="main-title">📊 Phân tích Silent Treatment theo Giới tính</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">✨ Dữ liệu khảo sát được phân tích và theo giới tính</p>', unsafe_allow_html=True)
+#st.markdown('<h1 class="main-title">📊 Phân tích Silent Treatment theo Giới tính</h1>', unsafe_allow_html=True)
+#st.markdown('<p class="subtitle">✨ Dữ liệu khảo sát được phân tích và theo giới tính</p>', unsafe_allow_html=True)
 
 # Loading animation
 with st.spinner('🔄 Đang tải dữ liệu...'):
