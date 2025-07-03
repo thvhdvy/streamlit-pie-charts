@@ -446,7 +446,7 @@ def plot_chart_plotly(data, column_name, title, gender):
             xaxis=dict(
                 title=None,
                 tickangle=45,
-                tickfont=dict(size=14, color='#0f0f0f'),
+                tickfont=dict(size=14, color='#0f0f0f', weight='normal'),
                 titlefont=dict(size=16),
                 color='#0f0f0f',
             ),
