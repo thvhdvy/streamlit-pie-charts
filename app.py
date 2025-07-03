@@ -430,7 +430,7 @@ def plot_chart_plotly(data, column_name, title, gender):
                 y=values,
                 marker=dict(
                     color=colors[:len(values)],
-                    line=dict(color='white', width=2)
+                    line=dict(color='white', width=2),
                 ),
                 text=values,
                 textposition='auto',
@@ -440,19 +440,21 @@ def plot_chart_plotly(data, column_name, title, gender):
         
         # Cấu hình layout cho biểu đồ cột
         fig.update_layout(
-            title=dict(text=f"<b>{gender}</b>", x=0.5, y=0.95, font=dict(size=18, color='#2c3e50')),
+            title=dict(text=f"<b>{gender}</b>", x=0.5, y=0.95, font=dict(size=18, color="#0f0f0f")),
             font=dict(size=12),
             showlegend=False,  # Không cần legend cho biểu đồ cột
             xaxis=dict(
                 title=None,
                 tickangle=45,
-                tickfont=dict(size=14),
-                titlefont=dict(size=16)
+                tickfont=dict(size=14, color='#0f0f0f'),
+                titlefont=dict(size=16),
+                color='#0f0f0f',
             ),
             yaxis=dict(
                 title='Số lượng',
                 titlefont=dict(size=16),
-                tickfont=dict(size=14)
+                tickfont=dict(size=14, color='#0f0f0f'),
+                color='#0f0f0f',           
             ),
             margin=dict(l=50, r=50, t=80, b=150),
             height=total_height,
