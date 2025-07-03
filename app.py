@@ -566,28 +566,6 @@ def plot_chart_plotly(data, column_name, title, gender):
         )
     
     return fig
-# Header chính với animation
-#st.markdown('<h1 class="main-title">📊 Phân tích Silent Treatment theo Giới tính</h1>', unsafe_allow_html=True)
-#st.markdown('<p class="subtitle">✨ Dữ liệu khảo sát được phân tích và theo giới tính</p>', unsafe_allow_html=True)
-
-# Loading animation
-with st.spinner('🔄 Đang tải dữ liệu...'):
-    time.sleep(0.5)  # Giả lập loading
-    
-    # Đọc file Excel từ repository
-    try:
-        df = pd.read_excel('response.xlsx', engine='openpyxl')
-        st.markdown('<div class="success-message">✅ Đã tải dữ liệu thành công từ file response.xlsx! <span class="loading-spinner"></span></div>', unsafe_allow_html=True)
-    except Exception as e:
-        st.error(f"❌ Lỗi khi đọc file Excel: {str(e)}")
-        st.stop()
-
-# Progress bar cho loading effect
-progress_bar = st.progress(0)
-for i in range(100):
-    time.sleep(0.01)
-    progress_bar.progress(i + 1)
-progress_bar.empty()
 
 # Lấy các cột từ cột thứ 4 trở đi
 columns_to_plot = df.columns[3:].tolist()
