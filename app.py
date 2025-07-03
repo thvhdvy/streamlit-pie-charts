@@ -615,7 +615,7 @@ for i, column in enumerate(columns_to_plot, 1):
     # Thay thế phần hiển thị biểu đồ trong vòng lặp:
     # Biểu đồ cho Nam
     with col1:
-        st.markdown('<div class="gender-title gender-male ripple">👨 Nam giới</div>', unsafe_allow_html=True)
+        #st.markdown('<div class="gender-title gender-male ripple">👨 Nam giới</div>', unsafe_allow_html=True)
         
         fig_male = plot_chart_plotly(df, column, column, "Nam")
         if fig_male:
@@ -625,7 +625,7 @@ for i, column in enumerate(columns_to_plot, 1):
 
     # Biểu đồ cho Nữ
     with col2:
-        st.markdown('<div class="gender-title gender-female ripple">👩 Nữ giới</div>', unsafe_allow_html=True)
+        #st.markdown('<div class="gender-title gender-female ripple">👩 Nữ giới</div>', unsafe_allow_html=True)
         
         fig_female = plot_chart_plotly(df, column, column, "Nữ")
         if fig_female:
