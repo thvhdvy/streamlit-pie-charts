@@ -577,7 +577,7 @@ with st.spinner('🔄 Đang tải dữ liệu...'):
     # Đọc file Excel từ repository
     try:
         df = pd.read_excel('response.xlsx', engine='openpyxl')
-        st.markdown('<div class="success-message">✅ Đã tải dữ liệu thành công từ file response.xlsx! <span class="loading-spinner"></span></div>', unsafe_allow_html=True)
+        #st.markdown('<div class="success-message">✅ Đã tải dữ liệu thành công từ file response.xlsx! <span class="loading-spinner"></span></div>', unsafe_allow_html=True)
     except Exception as e:
         st.error(f"❌ Lỗi khi đọc file Excel: {str(e)}")
         st.stop()
