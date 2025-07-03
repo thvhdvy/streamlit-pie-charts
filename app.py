@@ -395,126 +395,176 @@ def shorten_label(label):
 
 # Hàm tạo biểu đồ tròn với kích thước cố định
 # Thay thế toàn bộ hàm plot_pie_chart:
-def plot_pie_chart_plotly(data, column_name, title, gender):
+# Hàm vẽ biểu đồ (thay thế plot_pie_chart_plotly)
+def plot_chart_plotly(data, column_name, title, gender):
     # Lọc dữ liệu theo giới tính
     filtered_data = data[data['Giới tính của bạn là gì?'] == gender][column_name].dropna()
     
     if filtered_data.empty:
         return None
     
-    # Danh sách 4 đáp án hợp lệ cho cột D
-    valid_options = [
-        "Các mối quan hệ trên mạng xã hội",
-        "Trong mối quan hệ với gia đình",
-        "Trong các mối quan hệ với bạn bè, đồng nghiệp",
-        "Trong mối quan hệ với vợ/chồng/người yêu"
-    ]
-    
-    # Tách chuỗi và lọc giá trị hợp lệ, chỉ áp dụng giới hạn 4 đáp án cho cột D
-    all_values = []
-    for response in filtered_data:
-        if isinstance(response, str) and column_name == "Bạn thường bắt gặp tình huống xuất hiện hành vi Silent Treatment ở đâu?":
-            # Tách cả dấu chấm và phẩy, chỉ giữ 4 đáp án hợp lệ
-            values = [val.strip() for val in response.split('.') if val.strip() in valid_options]
-            all_values.extend(values)
-        elif isinstance(response, str):
-            # Giữ nguyên dữ liệu cho các cột khác
-            values = [val.strip() for val in response.split('.')]
-            all_values.extend(values)
-        else:
-            all_values.append(response)
-    
-    # Đếm tần suất
-    value_counts = pd.Series(all_values).value_counts()
-    if value_counts.empty:
-        return None
-    
-    # Chia dòng cho labels dài
-    labels = []
-    for label in value_counts.index:
-        if isinstance(label, str) and len(label) > 25:
-            words = label.split()
-            if len(words) > 3:
-                mid = len(words) // 2
-                line1 = ' '.join(words[:mid])
-                line2 = ' '.join(words[mid:])
-                labels.append(f"{line1}<br>{line2}")
-            else:
-                labels.append(label)
-        else:
-            labels.append(label)
-    
-    sizes = value_counts.values
+    # Kiểm tra xem dữ liệu có phải kiểu số không
+    is_numeric = pd.api.types.is_numeric_dtype(filtered_data)
     
     # Bảng màu đẹp
     colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', 
               '#DDA0DD', '#98D8C8', '#F7DC6F', '#85C1E9', '#F8C471', '#AED6F1', '#F8BBD9']
     
-    # Tính toán chiều cao tự động dựa trên số lượng legend items
-    num_items = len(sizes)
+    # Tính toán chiều cao động dựa trên số lượng items
+    num_items = len(filtered_data.value_counts()) if not is_numeric else 1
     legend_rows = (num_items + 2) // 3
     base_height = 500
     legend_height = legend_rows * 30
     total_height = base_height + legend_height + 100
     
-    # Tạo biểu đồ Plotly
-    fig = go.Figure(data=[go.Pie(
-        labels=labels,
-        values=sizes,
-        hole=0.1,
-        marker=dict(
-            colors=colors[:len(sizes)],
-            line=dict(color='white', width=2)
-        ),
-        textfont=dict(size=20, color='black'),
-        textposition='inside',
-        textinfo='percent',
-        hovertemplate='<b>%{label}</b><br>Số lượng: %{value}<br>Tỷ lệ: %{percent}<extra></extra>',
-        pull=[0.05 if i == 0 else 0 for i in range(len(sizes))],
-        domain=dict(x=[0.1, 0.9], y=[0.3, 0.9])
-    )])
-    
-    # Cấu hình layout
-    fig.update_layout(
-        title=dict(text=f"<b>{gender}</b>", x=0.5, y=0.95, font=dict(size=18, color='#2c3e50')),
-        font=dict(size=12),
-        showlegend=True,
-        legend=dict(
-            orientation="h",
-            yanchor="top",
-            y=0.25,
-            xanchor="center",
-            x=0.5,
-            font=dict(size=14, color='#000000'),
-            itemsizing="constant",
-            itemwidth=30,
-            tracegroupgap=10,
-            bgcolor="rgba(0,0,0,0)",
-            borderwidth=0
-        ),
-        margin=dict(l=50, r=50, t=80, b=150),
-        height=total_height,
-        width=650,
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        annotations=[
-            dict(
-                text=f"Tổng: {sum(sizes)} phản hồi",
-                x=0.5, y=0.25,
-                xref="paper", yref="paper",
-                showarrow=False,
-                font=dict(size=12, color='#6c757d')
+    if is_numeric:
+        # Xử lý dữ liệu số: vẽ biểu đồ cột
+        value_counts = filtered_data.value_counts().sort_index()  # Sắp xếp theo giá trị số
+        labels = [str(label) for label in value_counts.index]  # Chuyển đổi thành chuỗi
+        values = value_counts.values
+        
+        # Tạo biểu đồ cột
+        fig = go.Figure(data=[
+            go.Bar(
+                x=labels,
+                y=values,
+                marker=dict(
+                    color=colors[:len(values)],
+                    line=dict(color='white', width=2)
+                ),
+                text=values,
+                textposition='auto',
+                hovertemplate='<b>%{x}</b><br>Số lượng: %{y}<extra></extra>'
             )
+        ])
+        
+        # Cấu hình layout cho biểu đồ cột
+        fig.update_layout(
+            title=dict(text=f"<b>{gender}</b>", x=0.5, y=0.95, font=dict(size=18, color='#2c3e50')),
+            font=dict(size=12),
+            showlegend=False,  # Không cần legend cho biểu đồ cột
+            xaxis=dict(
+                title=None,
+                tickangle=45,
+                tickfont=dict(size=14),
+                titlefont=dict(size=16)
+            ),
+            yaxis=dict(
+                title='Số lượng',
+                titlefont=dict(size=16),
+                tickfont=dict(size=14)
+            ),
+            margin=dict(l=50, r=50, t=80, b=150),
+            height=total_height,
+            width=650,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            annotations=[
+                dict(
+                    text=f"Tổng: {sum(values)} phản hồi",
+                    x=0.5, y=-0.15,
+                    xref="paper", yref="paper",
+                    showarrow=False,
+                    font=dict(size=12, color='#6c757d')
+                )
+            ]
+        )
+    else:
+        # Xử lý dữ liệu không phải số (giữ nguyên logic biểu đồ tròn)
+        valid_options = [
+            "Các mối quan hệ trên mạng xã hội",
+            "Trong mối quan hệ với gia đình",
+            "Trong các mối quan hệ với bạn bè, đồng nghiệp",
+            "Trong mối quan hệ với vợ/chồng/người yêu"
         ]
-    )
+        
+        all_values = []
+        for response in filtered_data:
+            if isinstance(response, str) and column_name == "Bạn thường bắt gặp tình huống xuất hiện hành vi Silent Treatment ở đâu?":
+                values = [val.strip() for val in response.split('.') if val.strip() in valid_options]
+                all_values.extend(values)
+            elif isinstance(response, str):
+                values = [val.strip() for val in response.split('.')]
+                all_values.extend(values)
+            else:
+                all_values.append(response)
+        
+        value_counts = pd.Series(all_values).value_counts()
+        if value_counts.empty:
+            return None
+        
+        labels = []
+        for label in value_counts.index:
+            if isinstance(label, str) and len(label) > 25:
+                words = label.split()
+                if len(words) > 3:
+                    mid = len(words) // 2
+                    line1 = ' '.join(words[:mid])
+                    line2 = ' '.join(words[mid:])
+                    labels.append(f"{line1}<br>{line2}")
+                else:
+                    labels.append(label)
+            else:
+                labels.append(label)
+        
+        sizes = value_counts.values
+        
+        fig = go.Figure(data=[go.Pie(
+            labels=labels,
+            values=sizes,
+            hole=0.1,
+            marker=dict(
+                colors=colors[:len(sizes)],
+                line=dict(color='white', width=2)
+            ),
+            textfont=dict(size=20, color='black'),
+            textposition='inside',
+            textinfo='percent',
+            hovertemplate='<b>%{label}</b><br>Số lượng: %{value}<br>Tỷ lệ: %{percent}<extra></extra>',
+            pull=[0.05 if i == 0 else 0 for i in range(len(sizes))],
+            domain=dict(x=[0.1, 0.9], y=[0.3, 0.9])
+        )])
+        
+        fig.update_layout(
+            title=dict(text=f"<b>{gender}</b>", x=0.5, y=0.95, font=dict(size=18, color='#2c3e50')),
+            font=dict(size=12),
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=0.25,
+                xanchor="center",
+                x=0.5,
+                font=dict(size=14, color='#000000'),
+                itemsizing="constant",
+                itemwidth=30,
+                tracegroupgap=10,
+                bgcolor="rgba(0,0,0,0)",
+                borderwidth=0
+            ),
+            margin=dict(l=50, r=50, t=80, b=150),
+            height=total_height,
+            width=650,
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            annotations=[
+                dict(
+                    text=f"Tổng: {sum(sizes)} phản hồi",
+                    x=0.5, y=0.25,
+                    xref="paper", yref="paper",
+                    showarrow=False,
+                    font=dict(size=12, color='#6c757d')
+                )
+            ]
+        )
+        
+        fig.update_traces(
+            textfont_size=16,
+            marker=dict(colors=colors[:len(sizes)], line=dict(color='white', width=3)),
+            hoverinfo='label+percent+value',
+            hovertemplate='<b>%{label}</b><br>Số lượng: %{value}<br>Tỷ lệ: %{percent:.1%}<extra></extra>'
+        )
     
-    fig.update_traces(
-        textfont_size=16,
-        marker=dict(colors=colors[:len(sizes)], line=dict(color='white', width=3)),
-        hoverinfo='label+percent+value',
-        hovertemplate='<b>%{label}</b><br>Số lượng: %{value}<br>Tỷ lệ: %{percent:.1%}<extra></extra>'
-    )
-
     return fig
 # Header chính với animation
 st.markdown('<h1 class="main-title">📊 Phân tích Silent Treatment theo Giới tính</h1>', unsafe_allow_html=True)
@@ -567,7 +617,7 @@ for i, column in enumerate(columns_to_plot, 1):
     with col1:
         st.markdown('<div class="gender-title gender-male ripple">👨 Nam giới</div>', unsafe_allow_html=True)
         
-        fig_male = plot_pie_chart_plotly(df, column, column, "Nam")
+        fig_male = plot_chart_plotly(df, column, column, "Nam")
         if fig_male:
             st.plotly_chart(fig_male, use_container_width=True, config={'displayModeBar': False})
         else:
@@ -577,7 +627,7 @@ for i, column in enumerate(columns_to_plot, 1):
     with col2:
         st.markdown('<div class="gender-title gender-female ripple">👩 Nữ giới</div>', unsafe_allow_html=True)
         
-        fig_female = plot_pie_chart_plotly(df, column, column, "Nữ")
+        fig_female = plot_chart_plotly(df, column, column, "Nữ")
         if fig_female:
             st.plotly_chart(fig_female, use_container_width=True, config={'displayModeBar': False})
         else:
